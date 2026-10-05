@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Upstox — AI Research Copilot Prototype</title>
+<style>
+:root{--bg:#09090d;--panel:#15151d;--panel2:#1d1d27;--text:#f5f4f8;--muted:#a7a5b0;--purple:#9b6cff;--purple2:#6f43d8;--green:#32d583;--red:#ff5b67;--line:#2b2a35}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#20133e 0,#09090d 42%);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px}
+button{font:inherit;color:inherit;border:0;cursor:pointer}
+.shell{width:min(440px,100%);background:#08080c;border:1px solid #30303a;border-radius:34px;box-shadow:0 28px 90px #000b,0 0 0 7px #111118;overflow:hidden}
+.status{height:30px;padding:9px 18px 0;font-size:11px;color:#d8d6df;display:flex;justify-content:space-between}
+.app{height:790px;overflow:auto;scrollbar-width:none;background:linear-gradient(180deg,#0e0e14,#09090d)}
+.app::-webkit-scrollbar{display:none}.screen{display:none;min-height:790px;padding:8px 16px 90px}.screen.active{display:block}
+.top{height:50px;display:flex;align-items:center;gap:12px}.back{font-size:28px;background:none}.title{font-size:16px;font-weight:750}.sub{font-size:11px;color:var(--muted);margin-top:2px}
+.price{font-size:27px;font-weight:800;margin-top:13px}.red{color:var(--red)}.green{color:var(--green)}.muted{color:var(--muted)}
+.chart{height:165px;margin-top:8px;border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.chart svg{width:100%;height:100%}.range{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);padding:8px 4px}.range .sel{color:#fff;background:var(--purple);padding:5px 9px;border-radius:12px}
+.card{background:linear-gradient(180deg,#181821,#14141b);border:1px solid #292832;border-radius:17px;padding:14px;margin-top:12px}.card h3{font-size:15px;margin:0 0 9px}.small{font-size:11px;line-height:1.45;color:var(--muted)}
+.copilot{border:1px solid #8555ee;background:linear-gradient(135deg,#211936,#17131f);box-shadow:0 0 28px #7c4de31a}.copilot .row{display:flex;align-items:center;gap:10px}.spark{color:#c3a4ff;font-size:20px}.badge{margin-left:auto;background:#8b5cf6;color:#fff;border-radius:10px;padding:4px 7px;font-size:9px;font-weight:700}
+.cta{width:100%;background:linear-gradient(135deg,#a574ff,#7b4fe5);border-radius:13px;padding:12px;font-weight:750;margin-top:12px}.secondary{background:#262532;border:1px solid #383643}.bottom{position:fixed;bottom:0;width:min(440px,calc(100% - 56px));height:64px;background:#15151c;border-top:1px solid #2b2a35;display:flex;align-items:center;justify-content:space-around}.bottom button{background:none;color:#aaa7b2;font-size:11px}.bottom .buy{background:#35c981;color:#07140d;padding:11px 28px;border-radius:12px;font-weight:800}
+.loader{height:390px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}.orb{width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,#d6baff 0,#8b5cf6 36%,#2a194e 70%,transparent 71%);box-shadow:0 0 45px #9b6cff66;animation:pulse 1.5s infinite}.loader h2{margin:22px 0 8px}.step{width:100%;display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #24232c}.dot{width:24px;height:24px;border-radius:50%;border:1px solid #4b4755;display:grid;place-items:center;color:var(--muted);font-size:12px}.done{background:#213f31;border-color:#2d9c69;color:var(--green)}.doing{border-color:var(--purple);color:#fff;box-shadow:0 0 12px #8b5cf644}
+.tabs{display:flex;gap:7px;overflow:auto;margin:10px 0}.tabs button{background:#171720;border:1px solid #292833;border-radius:12px;padding:7px 11px;font-size:10px;white-space:nowrap}.tabs .on{background:#b084ff;color:#120d1c;border-color:#b084ff}
+.metricrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:#1a1a23;border:1px solid #2b2a35;border-radius:12px;padding:10px}.metric b{display:block;font-size:14px;margin-top:5px}.metric span{font-size:10px;color:var(--muted)}
+.why{float:right;color:#b68cff;background:none;font-size:11px}.risk{border-color:#6d3b4a;background:#20151b}.ask{background:#1b1625;border-color:#6f43d8}.chip{display:block;width:100%;text-align:left;background:#181720;border:1px solid #6e48b8;border-radius:20px;padding:10px 13px;margin:8px 0;font-size:11px}.answer{line-height:1.55;font-size:12px}.source{color:#bd9aff;font-size:11px}.disclaimer{font-size:10px;color:#8f8c98;margin-top:12px;line-height:1.45}
+.drawer{position:fixed;inset:0;background:#0009;display:none;align-items:flex-end;justify-content:center}.drawer.open{display:flex}.drawerbox{width:min(440px,100%);background:#171720;border:1px solid #353340;border-radius:24px 24px 0 0;padding:18px 18px 28px;max-height:72%;overflow:auto}.handle{width:42px;height:4px;background:#555260;border-radius:4px;margin:0 auto 18px}.close{float:right;background:none;font-size:20px}.evidence{background:#20202a;border-radius:14px;padding:13px;margin-top:12px}.evidence b{font-size:13px}.evidence p{font-size:11px;color:var(--muted);line-height:1.5;margin:7px 0 0}
+@keyframes pulse{50%{transform:scale(1.08);filter:brightness(1.25)}}@media(max-width:460px){body{padding:0}.shell{width:100%;border-radius:0;border:0;box-shadow:none}.bottom{width:100%}}
+</style>
+</head>
+<body>
+<div class="shell">
+<div class="status"><span>9:42</span><span>● ● ▮</span></div>
+<div class="app">
+
+<section id="s1" class="screen active">
+ <div class="top"><button class="back">‹</button><div><div class="title">Infosys</div><div class="sub">INFY • NSE</div></div><span style="margin-left:auto">♡　?</span></div>
+ <div style="font-size:9px;color:#b9a7d9;background:#171321;border:1px solid #3d3153;padding:5px 8px;border-radius:9px;display:inline-block;margin-top:7px">CONCEPT PROTOTYPE • DATA SHOWN FOR UX DEMO</div>
+ <div class="price">₹1,594.10</div><div class="red" style="font-size:12px">−₹21.30 (2.10%) Today</div>
+ <div class="chart"><svg viewBox="0 0 390 165" preserveAspectRatio="none"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff644d" stop-opacity=".75"/><stop offset="1" stop-color="#ff644d" stop-opacity="0"/></linearGradient></defs><path d="M0 48 C25 10 42 24 65 36 S98 28 120 50 S150 60 170 45 S200 72 220 66 S250 74 270 91 S300 84 320 110 S350 124 390 132 L390 165 L0 165Z" fill="url(#g)"/><path d="M0 48 C25 10 42 24 65 36 S98 28 120 50 S150 60 170 45 S200 72 220 66 S250 74 270 91 S300 84 320 110 S350 124 390 132" fill="none" stroke="#ff654f" stroke-width="3"/></svg></div>
+ <div class="range"><span class="sel">1D</span><span>1W</span><span>1M</span><span>1Y</span><span>5Y</span><span>All</span><span>NSE</span></div>
+ <div class="card"><div class="small">Featured in</div><b>IT　•　Best for beginners</b></div>
+ <div class="card copilot"><div class="row"><span class="spark">✦</span><h3>Understand this stock</h3><span class="badge">NEW</span></div><div class="small">Turn the numbers, news and trends into a simpler picture before you decide.</div><button class="cta" onclick="go(2)">Explore →</button></div>
+ <div class="card"><h3>What's in news?</h3><div class="small">Upstox · 1d · Stock market today — recent developments and company news.</div></div>
+</section>
+
+<section id="s2" class="screen">
+ <div class="top"><button class="back" onclick="go(1)">‹</button><div><div class="title">Understand this stock</div><div class="sub">INFY • Research brief</div></div></div>
+ <div class="loader"><div class="orb"></div><h2>Analyzing Infosys</h2><div class="muted" style="font-size:12px">We're putting together a simple,<br>evidence-backed view for you.</div></div>
+ <div class="step"><div class="dot done">✓</div><div><b>Reviewing financial performance</b><div class="small">Checking latest reported data</div></div></div>
+ <div class="step"><div class="dot done">✓</div><div><b>Analyzing price movement</b><div class="small">Looking at recent trends and key levels</div></div></div>
+ <div class="step"><div class="dot done">✓</div><div><b>Reviewing relevant developments</b><div class="small">Scanning recent news and announcements</div></div></div>
+ <div class="step"><div class="dot doing">•</div><div><b>Identifying key risks</b><div class="small">Company and sector factors</div></div></div>
+ <button class="cta" onclick="go(3)">View research brief</button>
+</section>
+
+<section id="s3" class="screen">
+ <div class="top"><button class="back" onclick="go(1)">‹</button><div><div class="title">Research Brief</div><div class="sub">Infosys • Updated today</div></div></div>
+ <div class="card"><div class="small">In simple terms</div><div style="font-size:13px;margin-top:5px">A large IT company with steady reported revenue growth.</div></div>
+ <div class="tabs">
+  <button class="on" onclick="tab('overview',this)">Overview</button>
+  <button onclick="tab('business',this)">Business</button>
+  <button onclick="tab('valuation',this)">Valuation</button>
+  <button onclick="tab('trend',this)">Trend</button>
+  <button onclick="tab('risks',this)">Risks</button>
+ </div>
+ <div id="tab-overview">
+  <div class="card"><button class="why" onclick="openDrawer()">Why?</button><h3>What's happening?</h3><div class="small">Infosys is down 2.1% today. The move should be interpreted alongside sector conditions, recent developments and broader market sentiment.</div></div>
+  <div class="card"><h3>Decision snapshot</h3><div class="metricrow"><div class="metric"><span>Business</span><b class="green">Stable</b></div><div class="metric"><span>Valuation</span><b>Contextual</b></div><div class="metric"><span>Risk</span><b style="color:#f5c451">Review</b></div></div><div class="small" style="margin-top:9px">This is a research summary, not a Buy/Sell signal.</div></div>
+ </div>
+ <div id="tab-business" style="display:none">
+  <div class="card"><h3>Business health</h3><div class="metricrow"><div class="metric"><span>Revenue</span><b class="green">9.85% ↑</b></div><div class="metric"><span>Profitability</span><b>Stable</b></div><div class="metric"><span>Debt</span><b style="color:#f5c451">Moderate</b></div></div><div class="card" style="margin:10px 0 0"><div class="small">What this means</div><div style="font-size:11px;line-height:1.5;margin-top:5px">Revenue growth is a positive business signal, but it should be considered with profitability, debt and industry conditions.</div></div></div>
+ </div>
+ <div id="tab-valuation" style="display:none">
+  <div class="card"><h3>Valuation context</h3><div class="metricrow"><div class="metric"><span>P/E</span><b>24.8x</b></div><div class="metric"><span>Sector avg.</span><b>26.1x</b></div><div class="metric"><span>Use with</span><b>History</b></div></div><div class="small" style="margin-top:10px">A lower P/E than a peer group does not automatically mean a stock is cheap; compare growth, profitability and business quality.</div></div>
+ </div>
+ <div id="tab-trend" style="display:none">
+  <div class="card"><h3>Price & trend</h3><div class="small">Recent price movement and observable market activity can provide context for what has already happened. Historical levels are not predictions of future prices.</div><div class="card" style="margin:10px 0 0"><div class="small">Historical context</div><div style="font-size:12px;margin-top:6px">Elevated buying/selling activity has previously appeared around selected price ranges.</div></div></div>
+ </div>
+ <div id="tab-risks" style="display:none">
+  <div class="card risk"><h3>⚠ Key risks</h3><div class="small">IT-sector demand, global macro conditions, client technology spending, currency movements and company execution can affect the investment thesis.</div><div class="card" style="margin:10px 0 0"><div class="small">Research prompt</div><div style="font-size:11px;margin-top:5px">“Which of these risks has changed most recently?”</div></div></div>
+ </div>
+ <div class="card"><button class="why">View details ›</button><h3>Business health</h3><div class="metricrow"><div class="metric"><span>Revenue</span><b class="green">9.85% ↑</b></div><div class="metric"><span>Profitability</span><b>Stable</b></div><div class="metric"><span>Debt</span><b style="color:#f5c451">Moderate</b></div></div><div class="card" style="margin:10px 0 0"><div class="small">What this means</div><div style="font-size:11px;line-height:1.5;margin-top:5px">Revenue growth is a positive business signal, but it should be considered with profitability, debt and industry conditions.</div></div></div>
+ <div class="card"><button class="why">View details ›</button><h3>Valuation</h3><div class="metricrow"><div class="metric"><span>P/E</span><b>24.8x</b></div><div class="metric"><span>Sector avg.</span><b>26.1x</b></div><div class="metric"><span>Context</span><b>Peer + history</b></div></div></div>
+ <div class="card risk"><h3>⚠ Key risks</h3><div class="small">IT-sector demand, global macro conditions, client spending and company execution can affect the investment thesis.</div></div>
+ <button class="cta" onclick="go(5)">Ask about this stock</button>
+</section>
+
+<section id="s4" class="screen">
+ <div class="top"><button class="back" onclick="go(3)">‹</button><div><div class="title">Evidence</div><div class="sub">Why this insight?</div></div></div>
+ <div class="card"><h3>“Revenue growth is 9.85%.”</h3><div class="small">The number is taken from reported company financial data for the latest stated period.</div></div>
+ <div class="card"><h3>Supporting data</h3><div class="metricrow"><div class="metric"><span>Previous</span><b>₹1,32,000 Cr</b></div><div class="metric"><span>Latest</span><b>₹1,55,310 Cr</b></div><div class="metric"><span>Change</span><b class="green">+9.85%</b></div></div></div>
+ <div class="card"><h3>Source</h3><div class="small">Consolidated financial statements / Upstox company financials</div></div>
+ <div class="card"><h3>Period</h3><div class="small">Apr 2025 – Mar 2026<br>Compared with the previous stated period.</div></div>
+ <div class="card"><h3>What this means</h3><div class="small">Revenue growth can indicate stronger reported business activity, but it does not by itself indicate future stock returns.</div></div>
+ <div class="card ask"><div class="small">AI insights are explanations of available information. Verify critical information before making an investment decision.</div></div>
+</section>
+
+<section id="s5" class="screen">
+ <div class="top"><button class="back" onclick="go(3)">‹</button><div><div class="title">Ask about Infosys</div><div class="sub">Contextual research assistant</div></div></div>
+ <div class="card ask"><h3>What do you want to understand?</h3>
+ <button class="chip" onclick="answer('Why is Infosys falling today?')">Why is Infosys falling today?</button>
+ <button class="chip" onclick="answer('Explain the biggest risks')">Explain the biggest risks</button>
+ <button class="chip" onclick="answer('What does P/E mean?')">What does P/E mean?</button>
+ <button class="chip" onclick="answer('Explain this like I am a beginner')">Explain this like I'm a beginner</button>
+ <button class="chip" onclick="answer('What should I research next?')">What should I research next?</button></div>
+ <div id="answer" class="card" style="display:none"><div class="small">AI answer</div><p id="answerText" class="answer"></p><div class="source">View sources · How this was generated</div></div>
+ <div class="card"><div class="muted" style="font-size:11px">Ask a follow-up question…</div></div>
+ <div class="disclaimer">Prototype concept only. AI can explain information and show supporting evidence; it does not predict future returns or decide for you. Educational use only, not investment advice.</div>
+</section>
+
+</div>
+<div class="bottom"><button>⌂<br>Home</button><button>▥<br>Stocks</button><button>♧<br>MF</button><button>▤<br>News</button><button class="buy">Buy</button></div>
+</div>
+<div id="drawer" class="drawer" onclick="closeDrawer(event)"><div class="drawerbox" onclick="event.stopPropagation()"><div class="handle"></div><button class="close" onclick="closeDrawer()">×</button><h2 style="margin:0">Why is revenue growth 9.85%?</h2><div class="evidence"><b>AI explanation</b><p>Infosys' operating revenue grew 9.85% in the latest financial period compared with the previous year.</p></div><div class="evidence"><b>Source</b><p>Upstox company financials / reported financial statements.</p></div><div class="evidence"><b>How to interpret</b><p>Revenue growth is one business-health indicator. It should be considered with profitability, debt, valuation and industry conditions.</p></div><div class="evidence"><b>Methodology</b><p>Uses reported financial data and observable market information. No future price prediction is generated.</p></div></div></div>
+<script>
+function go(n){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('s'+n).classList.add('active');document.querySelector('.app').scrollTop=0}
+function openDrawer(){document.getElementById('drawer').classList.add('open')}
+function closeDrawer(e){if(!e||e.target.id==='drawer')document.getElementById('drawer').classList.remove('open')}
+function tab(name,btn){
+  document.querySelectorAll('#s3 .tabs button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  ['overview','business','valuation','trend','risks'].forEach(n=>{
+    const el=document.getElementById('tab-'+n); if(el) el.style.display=n===name?'block':'none';
+  });
+}
+function answer(q){const a=document.getElementById('answer');const t=document.getElementById('answerText');const answers={
+'Why is Infosys falling today?':'The stock is down 2.1% today. A useful interpretation combines recent company developments, IT-sector sentiment, broader market conditions and observable price/volume context. This is an explanation of available information, not a prediction of where the price will go.',
+'Explain the biggest risks':'Key risks to research include IT-sector demand, global macro conditions, client technology spending, currency movements and company execution. The importance of each factor depends on the latest reported data and developments.',
+'What does P/E mean?':'P/E compares a company’s share price with its earnings per share. A higher P/E can mean investors are paying more for each unit of current earnings. It is most useful when compared with peers, the company’s own history and expected business conditions.',
+'Explain this like I am a beginner':'Think of the brief as a map of the evidence: what the business is doing, how the stock is valued, what is moving it, and what could go wrong. It does not turn those facts into a Buy or Sell command.',
+'What should I research next?':'Start with the business model, recent revenue and profit trend, valuation versus relevant peers, major recent developments, debt, and the company- or sector-specific risks that could change the investment thesis.'
+};t.textContent=answers[q]||'I can help explain the information available on this stock and show the evidence behind the explanation.';a.style.display='block';a.scrollIntoView({behavior:'smooth',block:'center'})}
+</script>
+</body>
+</html>
